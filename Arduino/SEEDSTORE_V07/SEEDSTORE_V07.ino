@@ -51,7 +51,7 @@ static byte lastKeyPress = btnNONE; // last button code
 static byte wordNum = 0;           // selected secret word
 static int sword[maxWord] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 static char seedName[maxSeed][nameLen+1] = {"ALFA","BETA","GAMA"};  // default Recovery seed names
-static long countDown = 7776000;   // time for PIN recovery (90 days)
+static long countDown = defaultPinRecoveryDelay;   // time for PIN recovery (90 days)
 
 /* for Arduino LCD KeyPad Shield (SKU: DFR0009)
 // read the buttons
@@ -350,7 +350,7 @@ void scanKey(byte &lcd_key, byte &lastKeyPress, int &nonePressTime, int &keyPres
 
 // the main loop is triggered every tenth of a second 
 void mainLoop() {
-  if (keyPressTime > 20 && lcd_key == btnSELECT) {setupMode = true; lcd.clear(); setupItem = 1; };
+//  if (keyPressTime > 20 && lcd_key == btnSELECT) {setupMode = true; lcd.clear(); setupItem = 1; };
   if (cursorOn && (runtime/5 % 2 == 0)) lcd.cursor(); else lcd.noCursor();      
 }
 
@@ -358,6 +358,7 @@ void setup() {
   pinMode(led, OUTPUT); digitalWrite(led, LOW); // turn off the integrated LED
   pinMode(10, INPUT);                           // disable back light control
 #ifdef LCD                                      // LCD display only
+  if(EEPROM.read(addrContr) != 0xFF) LCDcontrast = EEPROM.read(addrContr); // load LCD contrast value if is set
   pinMode(pwmout, OUTPUT); analogWrite(pwmout, LCDcontrast); // set default LCD contrast
 #endif
   pinMode(A0, INPUT); pinMode(A1, INPUT); pinMode(A2, INPUT); // set headers to input mode
@@ -417,7 +418,7 @@ if (setupMode)
       if (saveNameQ(selectedSeed)) setupItem = 10; break; 
     case 10: 
       if (yesNo("Change words?",yes)) 
-        if (yes) {setupItem = 11; } else {setupItem = 1; setupMode = false; }; 
+        if (yes) {setupItem = 11; } else {setupItem = 1; menuItem = 1; setupMode = false; }; 
       break;
     case 11: 
       if (showWords(selectedSeed, wordNum)) {//memcpy(line.txt,sword[wordNum],wordLen); line.txt[wordLen]='\0';
@@ -426,7 +427,7 @@ if (setupMode)
     case 12: 
       if (editSecureWord(selectedSeed, wordNum)) setupItem = 11; break;
     case 13: 
-      if (saveWordsQ(selectedSeed)) {setupItem = 1; setupMode = false; lcd.clear();}; break;  
+      if (saveWordsQ(selectedSeed)) {setupItem = 1; menuItem = 1; setupMode = false; lcd.clear();}; break;  
   }
 else {
   switch (menuItem) {
@@ -473,7 +474,7 @@ else {
       if (delayedAcess()) {menuItem = 32; // reset PIN to default
           hashPin(&sha256, selectedSeed, defPin); savePinHash(selectedSeed); };        
       if (lcd_key == btnNONE && lastKeyPress == btnLEFT) {
-          lastKeyPress = btnNONE; menuItem = 1; lcd.clear(); };   
+          lastKeyPress = btnNONE; menuItem = 1; lcd.clear(); countDown = defaultPinRecoveryDelay; };   
     break;
 
     case 32: //
@@ -484,9 +485,9 @@ else {
       cursorOn = false; 
       lcd.setCursor(0,0); lcd.print("Set LCD contrast");
       lcd.setCursor(0,1); lcd.print("Up / Down");
-      if (lcd_key == btnUP)   { LCDcontrast = change(LCDcontrast,140,1); analogWrite(pwmout, LCDcontrast); };
+      if (lcd_key == btnUP)   { LCDcontrast = change(LCDcontrast,150,1); analogWrite(pwmout, LCDcontrast); };
       if (lcd_key == btnDOWN) { LCDcontrast = change(LCDcontrast,0,-1); analogWrite(pwmout, LCDcontrast); };
-      if (lcd_key == btnNONE && lastKeyPress == btnSELECT) { lastKeyPress = btnNONE; lcd.clear(); menuItem=1; };  
+      if (lcd_key == btnNONE && lastKeyPress == btnSELECT) { lastKeyPress = btnNONE; lcd.clear(); menuItem=1; EEPROM.write(addrContr,LCDcontrast);};  
     break; 
   };  
 };

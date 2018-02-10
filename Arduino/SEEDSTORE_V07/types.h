@@ -4,6 +4,7 @@ const byte maxWord        = 24;  // number of words in the recovery seed
 const byte wordLen        = 8;   // word length is 8 chars (fix)
 const byte pinLen         = 8;   // max PIN length
 const byte nameLen        = 8;   // max seed name length
+const long defaultPinRecoveryDelay = 7776000;   // time for PIN recovery (90 days)
 
 // uncomment for debug only !
 //#define DEBUGMODE
@@ -15,6 +16,7 @@ const byte nameLen        = 8;   // max seed name length
 #define sSysVer "Seed store   V07"  // product info & version
 #define sAuthor "Joe Tinker"       // Author or other info
 #define maxSeed 3        // number of supported recovery seeds
+#define addrContr 1      // LCD contrast
 #define addrNames 4      // EEPROM address for names
 #define addrPins 64      // EEPROM address for PINs
 #define addrWords 112    // EEPROM address for secure words
