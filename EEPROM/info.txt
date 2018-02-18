@@ -1,0 +1,10 @@
+This procedure is used to initially load EEPROM content
+
+#1 
+Connect Seedstore device to your PC via USB
+
+#2 
+Compile and upload EEPROM.INO
+
+#3 
+Run word-out.ps1 in powershell
